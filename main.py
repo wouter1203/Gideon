@@ -15,10 +15,11 @@ from utils.defaults import get_task_from_prompt
 from tools.playwright import search_with_playwright
 import re  # Add this import for regular expressions
 from utils.state_manager import initialize_db, set_state, get_state, clear_state
+from authentication.auth import authenticate  # Import the authentication function
 
 load_dotenv()
 
-MIC_INDEX = 0
+MIC_INDEX = 1
 TRIGGER_WORD = "Jarvis"
 CONVERSATION_TIMEOUT = 30  # seconds of inactivity before exiting conversation mode
 
@@ -71,6 +72,15 @@ def fetch_state(key):
 
 # Update the write() function to use the database-backed state
 def write():
+    # Perform authentication before starting the main loop
+    if not authenticate():
+        logging.error("❌ Authentication failed. Exiting...")
+        speak_text("Authentication failed. Access denied.")
+        return  # Exit the function if authentication fails
+
+    logging.info("✅ Authentication successful. Starting wake word detection.")
+    speak_text("Authentication successful. Welcome!")
+
     conversation_mode = fetch_state("conversation_mode") == "True"
     last_interaction_time = float(fetch_state("last_interaction_time") or 0)
 

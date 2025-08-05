@@ -1,0 +1,12 @@
+dotenv
+SpeechRecognition
+langchain_ollama
+langchain
+logging
+pyttsx3
+playwright
+pytz
+chromadb
+streamlit
+ddgs
+pyaudio
