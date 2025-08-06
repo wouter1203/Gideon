@@ -12,6 +12,7 @@ from requests.auth import HTTPBasicAuth
 import speech_recognition as sr  # Add this import
 from threading import Thread
 import time
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -20,21 +21,10 @@ CORS(app)
 llm = OllamaLLM(model="mistral")  # Ensure the model is accessible
 prompt_template = PromptTemplate(
     input_variables=["user_input"],
-    template="You are a helpful assistant. Respond to the following: {user_input}"
+    template="Your name is Gideon, you are a personal assistant. Respond to the following: {user_input}"
 )
 llm_chain = RunnableSequence(prompt_template, llm)
 
-
-# Function to generate an opening message using pyttsx3
-def generate_opening_message():
-    engine = pyttsx3.init()
-    opening_message = "Hello! Welcome to your AI assistant. How can I help you today?"
-    audio_file = "opening_message.mp3"
-    
-    # Save the generated speech to an audio file
-    engine.save_to_file(opening_message, audio_file)
-    engine.runAndWait()
-    return audio_file
 
 def convert_audio_to_text(audio_file_path):
     """
@@ -94,19 +84,19 @@ def process_recording_async(recording_url):
 
 @app.route("/voice", methods=["POST"])
 def voice():
-    # Log when the caller connects
-    print("Caller connected. Request data:", request.form)
-    print("Headers:", request.headers)
-    print("Method:", request.method)
-
-    # Generate the opening message
-    opening_message = "Hello! Welcome to your AI assistant. How can I help you today?"
+    # Check if this is the first interaction
+    is_initial = request.args.get("initial", "true") == "true"
 
     # Twilio VoiceResponse
     resp = VoiceResponse()
 
-    # Speak the opening message
-    resp.say(opening_message)
+    if is_initial:
+        # Generate the opening message
+        opening_message = "Hello! Welcome to your AI assistant. How can I help you today?"
+        resp.say(opening_message)
+    else:
+        # Continue the conversation
+        resp.say("How can I assist you further?")
 
     # Record the user's response
     resp.record(
@@ -169,6 +159,7 @@ def process():
     # Respond to the user with the generated answer
     response = VoiceResponse()
     response.say(answer, voice='alice')
+    response.redirect("/voice")  # Redirect back to /voice to restart the listening process
     return Response(str(response), mimetype="text/xml")
 
 @app.route("/handle-keypress", methods=["POST"])
@@ -186,5 +177,28 @@ def handle_keypress():
 
     return Response(str(response), mimetype="text/xml")
 
+def generate_opening_message():
+    # Get the current hour
+    current_hour = datetime.now().hour
+
+    # Determine the greeting based on the time of day
+    if 5 <= current_hour < 12:
+        greeting = "Good morning"
+    elif 12 <= current_hour < 18:
+        greeting = "Good afternoon"
+    else:
+        greeting = "Good evening"
+
+    # Generate the opening message
+    opening_message = f"{greeting}, my name is Gideon. How can I help you today?"
+    audio_file = "opening_message.mp3"
+
+    # Use pyttsx3 to save the generated speech to an audio file
+    engine = pyttsx3.init()
+    engine.save_to_file(opening_message, audio_file)
+    engine.runAndWait()
+
+    return audio_file
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    app.run(host="192.168.2.32", port=5001, debug=True)
