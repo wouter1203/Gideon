@@ -3,14 +3,11 @@ from twilio.twiml.voice_response import VoiceResponse
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableSequence
-from pyngrok import ngrok
 import pyttsx3
-import os
 from flask_cors import CORS
 import requests
 from requests.auth import HTTPBasicAuth
-import speech_recognition as sr  # Add this import
-from threading import Thread
+import speech_recognition as sr
 import time
 from datetime import datetime
 
