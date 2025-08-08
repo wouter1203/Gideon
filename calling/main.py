@@ -57,7 +57,7 @@ def process_recording_async(recording_url):
             print(f"Attempt {attempt + 1} to download recording...")
             response = requests.get(
                 recording_url,
-                auth=HTTPBasicAuth("ACfae0b792cebbdf9b92c0b2dc724abe89", "8dbff6a472cd2f7612f138585ed0aaed")
+                # auth=HTTPBasicAuth("ACfae0b792cebbdf9b92c0b2dc724abe89", "8dbff6a472cd2f7612f138585ed0aaed")
             )
             if response.status_code == 200:
                 # Save the recording locally
