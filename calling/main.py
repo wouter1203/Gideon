@@ -10,6 +10,7 @@ from requests.auth import HTTPBasicAuth
 import speech_recognition as sr
 import time
 from datetime import datetime
+import wave
 
 app = Flask(__name__)
 CORS(app)
@@ -31,6 +32,12 @@ def convert_audio_to_text(audio_file_path):
     """
     recognizer = sr.Recognizer()
     try:
+        # Print audio file duration for debugging
+        with wave.open(audio_file_path, 'rb') as wf:
+            frames = wf.getnframes()
+            rate = wf.getframerate()
+            duration = frames / float(rate)
+            print(f"Audio duration: {duration:.2f} seconds")
         with sr.AudioFile(audio_file_path) as source:
             audio_data = recognizer.record(source)  # Read the audio file
             transcript = recognizer.recognize_google(audio_data)  # Use Google Web Speech API
